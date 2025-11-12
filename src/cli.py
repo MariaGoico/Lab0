@@ -57,7 +57,7 @@ def clean():
 
 @clean.command(
     name="remove-missing",
-    help="Remove missing values (None, empty string, NaN). Example: python cli.py" \
+    help="Remove missing values (None, empty string, NaN). Example: python cli.py"
     " clean remove-missing 1 '' 3 None",
 )
 @click.argument("values", nargs=-1)
@@ -78,7 +78,7 @@ def clean_remove_missing(values):
 
 @clean.command(
     name="fill-missing",
-    help="Fill missing values with a given value. Example: python cli.py " \
+    help="Fill missing values with a given value. Example: python cli.py "
     "clean fill-missing 1 '' 3 None --value 0",
 )
 @click.argument("values", nargs=-1)
@@ -109,7 +109,7 @@ def numeric():
 
 @numeric.command(
     name="normalize",
-    help="Normalize values using min-max scaling. Example: python cli.py numeric" \
+    help="Normalize values using min-max scaling. Example: python cli.py numeric"
     " normalize 5 10 15 --min 0 --max 1",
 )
 @click.argument("values", nargs=-1, type=float)
@@ -150,7 +150,7 @@ def numeric_standardize(values):
 
 @numeric.command(
     name="clip",
-    help="Clip values into a given range. Example: python cli.py numeric " \
+    help="Clip values into a given range. Example: python cli.py numeric "
     "clip 1 5 10 --min 2 --max 8",
 )
 @click.argument("values", nargs=-1, type=float)
@@ -173,7 +173,7 @@ def numeric_clip(values, min_val, max_val):
 
 @numeric.command(
     name="to-int",
-    help="Convert values to integers (non convertible values ignored). " \
+    help="Convert values to integers (non convertible values ignored). "
     "Example: python cli.py numeric to-int 5 10 3.6 A",
 )
 @click.argument("values", nargs=-1)
@@ -192,7 +192,7 @@ def numeric_to_int(values):
 
 @numeric.command(
     name="log",
-    help="Apply logarithmic transformation (positive values only)." \
+    help="Apply logarithmic transformation (positive values only)."
     " Example: python cli.py numeric log 1 10 100",
 )
 @click.argument("values", nargs=-1)
@@ -220,7 +220,7 @@ def text():
 
 
 @text.command(name="tokenize", help="Tokenize text into lowercase alphanumeric words.")
-@click.argument("input")
+@click.argument("input_text")
 def text_tokenize(input_text):
     """
     Tokenize text into lowercase alphanumeric words.
@@ -238,7 +238,7 @@ def text_tokenize(input_text):
     name="remove-punctuation",
     help="Remove punctuation (keeps alphanumeric + spaces).",
 )
-@click.argument("input")
+@click.argument("input_text")
 def text_remove_punctuation(input_text):
     """
     Remove punctuation from text, preserving only alphanumeric characters and spaces.
@@ -254,10 +254,10 @@ def text_remove_punctuation(input_text):
 
 @text.command(
     name="remove-stopwords",
-    help="Remove stop words. Example: python cli.py text " \
+    help="Remove stop words. Example: python cli.py text "
     "remove-stopwords 'this is a test' --stop 'is,a'",
 )
-@click.argument("input")
+@click.argument("input_text")
 @click.option("--stop", help="Comma-separated stop words list")
 def text_remove_stopwords(input_text, stop):
     """
@@ -299,7 +299,8 @@ def struct_shuffle(values, seed):
     Example:
         python cli.py struct shuffle 1 2 3 4 --seed 42
     """
-    click.echo(shuffle(list(values), seed))
+    parsed_values = [parse_value(v) for v in values]
+    click.echo(shuffle(parsed_values, seed))
 
 
 @struct.command(
@@ -324,6 +325,34 @@ def struct_flatten(values):
     click.echo(result)
 
 
+def parse_value(v):
+    """
+    Convert a CLI input string to an integer if possible.
+
+    Parameters
+    ----------
+    v : str
+        The value to parse, typically coming from command-line arguments.
+
+    Returns
+    -------
+    int or str
+        - If `v` can be converted to an integer, returns the integer.
+        - Otherwise, returns `v` unchanged as a string.
+
+    Example
+    -------
+    >>> parse_value("10")
+    10
+    >>> parse_value("hello")
+    'hello'
+    """
+    try:
+        return int(v)
+    except ValueError:
+        return v  # leave as string if not numeric
+
+
 @struct.command(
     name="unique",
     help="Get unique values (remove duplicates). Example: python cli.py struct unique 1 2 2 3",
@@ -339,7 +368,8 @@ def struct_unique(values):
     Example:
         python cli.py struct unique 1 2 2 3
     """
-    click.echo(remove_duplicates(list(values)))
+    parsed_values = [parse_value(v) for v in values]
+    click.echo(remove_duplicates(parsed_values))
 
 
 if __name__ == "__main__":

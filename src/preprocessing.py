@@ -69,6 +69,8 @@ def remove_missing(values):
     for v in values:
         if v is None:
             continue
+        if v in ("", "None", "none", "null", "NaN", "nan"):
+            continue
         if isinstance(v, float) and math.isnan(v):
             continue
         if v == "":
@@ -103,7 +105,12 @@ def fill_missing(values, fill_value=0):
     """
     filled = []
     for v in values:
-        if v is None or v == "" or (isinstance(v, float) and math.isnan(v)):
+        if (
+            v is None
+            or v == ""
+            or (isinstance(v, float) and math.isnan(v))
+            or v in ("", "None", "none", "null", "NaN", "nan")
+        ):
             filled.append(fill_value)
         else:
             filled.append(v)
@@ -169,7 +176,7 @@ def normalize_min_max(values, new_min=0.0, new_max=1.0):
         return [new_min] * len(values)
 
     normalized = (values - min_val) / (max_val - min_val)
-    return list(normalized * (new_max - new_min) + new_min)
+    return [float(x) for x in (normalized * (new_max - new_min) + new_min)]
 
 
 # 5. Standardization
@@ -403,7 +410,7 @@ def shuffle(values, seed=None):
     >>> shuffle([1, 2, 3], seed=42)
     [3, 1, 2]
     """
-    random.seed(seed)
+    rng = random.Random(seed)
     values_copy = values[:]
-    random.shuffle(values_copy)
+    rng.shuffle(values_copy)
     return values_copy
