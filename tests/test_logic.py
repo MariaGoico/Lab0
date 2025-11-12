@@ -50,17 +50,27 @@ def test_remove_duplicates():
 @pytest.mark.parametrize("values, new_min, new_max, expected", [
     ([10, 20, 30], 0, 1, [0.0, 0.5, 1.0]),
     ([5, 15], -1, 1, [-1.0, 1.0]),
+    ([5, 5], -1, 1, [-1.0, -1.0]),
 ])
 def test_normalize_min_max(values, new_min, new_max, expected):
     """Test min-max normalization (with optional parameters)."""
     assert normalize_min_max(values, new_min, new_max) == expected
 
 
-def test_standardize_z_score():
+@pytest.mark.parametrize(
+    "values, expected",
+    [
+        ([10, 20, 30], [-1.224744, 0.0, 1.224744]),
+        ([1, 2, 3, 4, 5], [-1.414213, -0.707106, 0.0, 0.707106, 1.414213]),
+        ([5, 5, 5], [0.0, 0.0, 0.0]),  # All same values (std=0)
+        ([0, 10], [-1.0, 1.0]),
+        ([100], [0.0]),  # Single value
+    ],
+)
+def test_standardize_z_score(values, expected):
     """Test z-score standardization."""
-    result = standardize_z_score([10, 20, 30])
-    # approx due to floating point rounding
-    assert pytest.approx(result, rel=1e-3) == [-1.224744, 0.0, 1.224744]
+    result = standardize_z_score(values)
+    assert pytest.approx(result, rel=1e-3) == expected
 
 
 @pytest.mark.parametrize("values, expected", [
@@ -77,11 +87,22 @@ def test_convert_to_int():
     assert convert_to_int(["10", "2.9", "hello", 5]) == [10, 5]
 
 
-def test_log_transform():
+@pytest.mark.parametrize(
+    "values, expected",
+    [
+        ([1, 10, -5, "100"], [0.0, 2.302585, 4.605170]),
+        ([1, 10, 100], [0.0, 2.302585, 4.605170]),
+        ([0, -10, -5], []),  # All non-positive
+        (["1", "10", "invalid", "100"], [0.0, 2.302585, 4.605170]),  # Mixed with invalid string
+        ([1], [0.0]),  # Single positive value
+        ([2.718281828], [1.0]),  # Approximately e
+    ],
+)
+def test_log_transform(values, expected):
     """Test logarithmic transformation (non-positive values ignored)."""
-    result = log_transform([1, 10, -5, "100"])
-    assert len(result) == 3  # only 3 values > 0
-    assert result[0] == 0.0
+    result = log_transform(values)
+    assert len(result) == len(expected)
+    assert pytest.approx(result, rel=1e-5) == expected
 
 
 def test_tokenize():

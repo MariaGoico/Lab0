@@ -320,7 +320,7 @@ def struct_flatten(values):
     Example:
         python cli.py struct flatten "[1,2]" "[3,4]"
     """
-    parsed_values = ast.literal_eval(values)
+    parsed_values = [ast.literal_eval(v) for v in values]
     result = flatten(parsed_values)
     click.echo(result)
 

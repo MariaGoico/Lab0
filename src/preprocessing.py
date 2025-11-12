@@ -73,8 +73,6 @@ def remove_missing(values):
             continue
         if isinstance(v, float) and math.isnan(v):
             continue
-        if v == "":
-            continue
         cleaned.append(v)
     return cleaned
 
