@@ -10,7 +10,7 @@
   #v(0.5em)
   #text(size: 12pt)[Data Preprocessing CLI and Logic Testing]
   #v(1em)
-  #datetime.today().display()
+  *GitHub link:* https://github.com/MariaGoico/Lab0
 ]
 
 #v(2em)
